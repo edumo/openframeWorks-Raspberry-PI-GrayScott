@@ -3,22 +3,25 @@
 //--------------------------------------------------------------
 void ofApp::setup(){
 	//consoleListener.setup(this);
-	ofHideCursor();
-	shader.load("shaderExample2");
-	f+=0.0001f;
-	k+=0.0001f;
+	//ofHideCursor();
+	shader.load("grayScott");
+	shaderTest.load("shaderExample");
+	
 	imgTest.load("images/bikers.jpg");
 	
+	fboTextureReference.allocate(ofGetWidth(), ofGetHeight());
+	fboTextureReference.begin();
+		ofClear(0, 0, 0, 0);
+		//imgTest.draw(0, 0, ofGetWidth(), ofGetHeight());
+	fboTextureReference.end();
+
+
 	fbo.allocate(ofGetWidth(), ofGetHeight());
 	fbo.begin();
 		ofClear(0, 0, 0, 0);
 		imgTest.draw(0, 0, ofGetWidth(), ofGetHeight());
 	fbo.end();
 
-	fbo2.allocate(ofGetWidth(), ofGetHeight());
-	fbo2.begin();
-		ofClear(0, 0, 0, 0);
-	fbo2.end();
 	int 	internalFormat = GL_RGBA;
 	 pingPong.allocate( ofGetWidth(), ofGetHeight(), internalFormat);
 }
@@ -26,30 +29,26 @@ void ofApp::setup(){
 //--------------------------------------------------------------
 void ofApp::update(){
     //
+	//f+=0.00001f;
+//	k+=0.00001f;
 	updatePingPong();
 
 		fbo.begin();
 		ofClear(0, 0, 0, 0);
-		shader.begin();
-//			shader.setUniformTexture("tex0", omxPlayer.getTextureReference(), omxPlayer.getTextureID());
-			shader.setUniformTexture("tex0", imgTest.getTexture(),1);
-			shader.setUniformTexture("backbuffer", imgTest.getTexture(),2);
-			shader.setUniform1f("time", ofGetElapsedTimef());
-			shader.setUniform2f("resolution", ofGetWidth(), ofGetHeight());
+		shaderTest.begin();
+//			shaderTest.setUniformTexture("tex0", omxPlayer.getTextureReference(), omxPlayer.getTextureID());
+			shaderTest.setUniformTexture("tex0", imgTest.getTexture(),1);
+			shaderTest.setUniformTexture("backbuffer", imgTest.getTexture(),2);
+			shaderTest.setUniform1f("time", ofGetElapsedTimef());
+			shaderTest.setUniform2f("resolution", ofGetWidth(), ofGetHeight());
 			imgTest.draw(0, 0, ofGetWidth(), ofGetHeight());
-		shader.end();
+		shaderTest.end();
 	fbo.end();
 }
 
 //--------------------------------------------------------------
 void ofApp::draw(){
-    /*ofSetColor(255);
-    
-    shader.begin();
-    
-    ofRect(0, 0, ofGetWidth(), ofGetHeight());
-    
-    shader.end();*/
+   
 
 fbo.draw(0, 0,ofGetWidth()/2,ofGetHeight()/2);
 
@@ -78,21 +77,18 @@ void ofApp::updatePingPong(){
         ofClear(0,0,0,255);
         ofDisableAlphaBlending(); // Defer alpha blending until .draw() to keep transparencies clean.
         shader.begin();
-        
-        // The other ofFbo of the ofxSwapBuffer can be accessed by calling the unicode "backbuffer"
-        // This is usually used to access "the previous pass", or the original frame for the first pass.
-        //if (pass == 0){
-        //    shader.setUniformTexture("backbuffer", imgTest.getTextureReference(), 0);
-        //} else {
-            shader.setUniformTexture("backbuffer", pingPong.src->getTextureReference(), 0);
-        //}
 
+        shader.setUniformTexture("tex0", imgTest.getTexture(),1);
+	//shader.setUniformTexture("tex0", fboTextureReference.getTexture(),1);
+	shader.setUniformTexture("backbuffer", pingPong.src->getTextureReference(), 2);
+	
         shader.setUniform1f( "diffU", (float)diffU);
-            shader.setUniform1f( "diffV", (float)diffV);
-            shader.setUniform1f( "f", (float)f );
-            shader.setUniform1f( "k", (float)k );
+        shader.setUniform1f( "diffV", (float)diffV);
+        shader.setUniform1f( "f", (float)f );
+        shader.setUniform1f( "k", (float)k );
 
- 	pingPong.src->draw(0, 0, ofGetWidth(), ofGetHeight());        
+	imgTest.draw(0, 0, ofGetWidth(), ofGetHeight());        
+	//ofRect(0, 0, ofGetWidth(), ofGetHeight());
 	shader.end();
         
         pingPong.dst->end();
@@ -123,8 +119,9 @@ void ofApp::keyReleased(int key){
 
 //--------------------------------------------------------------
 void ofApp::mouseMoved(int x, int y){
-     f = ofMap(mouseX,0,640,0.005,0.095,true);
-        k = ofMap(mouseY,0,480,0.01,0.028,true);
+ 
+    f = ofMap(mouseX,0, ofGetWidth(),0.005,0.095,true);
+    k = ofMap(mouseY,0,ofGetHeight(),0.01,0.028,true);
 
 }
 

@@ -20,9 +20,10 @@ void gotMessage(ofMessage msg);
 void updatePingPong();
 //TerminalListener consoleListener;
 
+ofShader shaderTest;
 ofShader shader;
 ofFbo fbo;
-ofFbo fbo2;
+ofFbo fboTextureReference;
 ofImage imgTest;
 
 float  diffU = 0.25f;
